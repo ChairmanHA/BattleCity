@@ -33,7 +33,21 @@ public:
         RequireToDestroy,
         EntityName,
         Pickable,
-        Picked
+        Picked,
+        EntityType  // 新增实体类型属性
+    };
+
+    // 添加实体类型枚举
+    enum class EntityType : int8_t {
+        Unknown = 0,
+        PlayerTank,
+        EnemyTank,
+        Bullet,
+        StaticBlock,
+        Bonus,
+        Base,
+        Explosion,
+        Shield
     };
 
 
@@ -66,10 +80,28 @@ public:
     bool isPickable() const;
     void setPickable(bool state);
 
+    // 实体类型管理
+    EntityType entityType() const;
+    void setEntityType(EntityType type);
+
+    // 添加便捷的类型检查方法
+    bool isPlayerTank() const { return entityType() == EntityType::PlayerTank; }
+    bool isEnemyTank() const { return entityType() == EntityType::EnemyTank; }
+    bool isBullet() const { return entityType() == EntityType::Bullet; }
+    bool isBonus() const { return entityType() == EntityType::Bonus; }
+    bool isStaticBlock() const { return entityType() == EntityType::StaticBlock; }
+    bool isBase() const { return entityType() == EntityType::Base; }
+    bool isExplosion() const { return entityType() == EntityType::Explosion; }
+    bool isShield() const { return entityType() == EntityType::Shield; }
+
+    // 虚析构函数确保正确的多态销毁
+    virtual ~Entity() = default;
+
 
 signals:
     void picked(int type);
     void livesLeftChanged(int health);
+    void aboutToBeDestroyed(); // 销毁前发出信号，让其他对象清理引用
 
 protected:
     virtual void advance(int phase) override;
@@ -124,6 +156,11 @@ inline QDebug operator<< (QDebug dbg, const Entity::Property &property)
         case Entity::Property::Picked:
         {
             m_property = "Entity::Property::Picked ";
+            break;
+        }
+        case Entity::Property::EntityType:
+        {
+            m_property = "Entity::Property::EntityType ";
             break;
         }
     }
